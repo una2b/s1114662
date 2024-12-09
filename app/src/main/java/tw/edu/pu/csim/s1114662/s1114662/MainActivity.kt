@@ -25,9 +25,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 
@@ -54,14 +57,38 @@ class MainActivity : ComponentActivity() {
 
 fun Start(m: Modifier){
     val activity = (LocalContext.current as? Activity)
-    Box (
-        modifier = Modifier.fillMaxSize().background(Color(0xff95fe95)).then(m),
+    val colors = listOf(Color(0xff95fe95), Color(0xfffdca0f), Color(0xfffea4a4), Color(0xffa5dfed)
+    )
+    var currentColorIndex by remember { mutableStateOf(0) }
+    var offset1 by remember { mutableStateOf(Offset.Zero) }
+    var offset2 by remember { mutableStateOf(Offset.Zero) }
+
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colors[currentColorIndex])
+            .then(m)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { offset1 = it },
+                    onDrag = { change, _ ->
+                        offset2 = change.position
+                    },
+                    onDragEnd = {
+                        if (offset2.x >= offset1.x) {
+                            currentColorIndex = (currentColorIndex - 1 + colors.size) % colors.size
+                        } else {
+                            currentColorIndex = (currentColorIndex + 1) % colors.size
+                        }
+                    }
+                )
+            },
         contentAlignment = Alignment.TopCenter ,
     ){
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // 顯示文字
             Text(
                 text = "2024期末上機考(資管三B毛姿云)"
             )
